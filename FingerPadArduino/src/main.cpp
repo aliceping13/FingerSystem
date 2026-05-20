@@ -1,29 +1,9 @@
-#include <Arduino.h>
-#include <Wire.h>
-
-#define IMU_ADDR 0x6A  
+#include "imu.h"
 
 #define ACCEL_SENS  0.000244f   // g/LSB
 #define GYRO_SENS   0.070f      // dps/LSB
 
 TwoWire myWire(PA9, PF0); // Arduino pins
-
-void imuWrite(uint8_t reg, uint8_t data) {
-    myWire.beginTransmission(IMU_ADDR);  // Wire -> myWire
-    myWire.write(reg);
-    myWire.write(data);
-    myWire.endTransmission();
-}
-
-void imuRead(uint8_t reg, uint8_t *buf, uint8_t len) {
-    myWire.beginTransmission(IMU_ADDR);  // Wire -> myWire
-    myWire.write(reg);
-    myWire.endTransmission(false);
-    myWire.requestFrom((uint8_t)IMU_ADDR, (uint8_t)len);  // Wire -> myWire
-    for (uint8_t i = 0; i < len; i++) {
-        buf[i] = myWire.read();  // Wire -> myWire
-    }
-}
 
 void setup() {
     Serial.begin(115200);
@@ -32,17 +12,6 @@ void setup() {
     pinMode(PF0, INPUT_PULLUP);
     myWire.setClock(400000);
     delay(10);
-
-    Serial.println("Scanning I2C...");
-    for (uint8_t addr = 1; addr < 127; addr++) {
-        myWire.beginTransmission(addr);
-        uint8_t err = myWire.endTransmission();
-        if (err == 0) {
-            Serial.print("Device found at 0x");
-            Serial.println(addr, HEX);
-        }
-    }
-    Serial.println("Scan done.");
 
     uint8_t who;
     imuRead(0x0F, &who, 1);

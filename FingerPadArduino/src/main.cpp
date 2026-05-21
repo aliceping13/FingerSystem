@@ -8,8 +8,8 @@ TwoWire myWire(PA9, PF0); // Arduino pins
 void setup() {
     Serial.begin(115200);
     myWire.begin();
-    pinMode(PA9, INPUT_PULLUP);
-    pinMode(PF0, INPUT_PULLUP);
+    // pinMode(PA9, INPUT_PULLUP);
+    // pinMode(PF0, INPUT_PULLUP);
     myWire.setClock(400000);
     delay(10);
 
@@ -23,8 +23,9 @@ void setup() {
     }
     Serial.println("IMU found");
 
-    imuWrite(0x10, 0x34);  // CTRL1 - Accel: 120 Hz, high-performance
-    imuWrite(0x11, 0x34);  // CTRL2 - Gyro: 120 Hz, high-performance
+    imuWrite(0x03, 0x00);  // IF_CFG - I2C enabled, active-high interrupts, push-pull, no internal pull-ups
+    imuWrite(0x10, 0x30);  // CTRL1 - Accel: 120 Hz, high-performance (OP_MODE_XL=000)
+    imuWrite(0x11, 0x30);  // CTRL2 - Gyro: 120 Hz, high-performance (OP_MODE_G=000)
     imuWrite(0x15, 0x0C);  // CTRL6 - Gyro ±2000 dps
     imuWrite(0x17, 0x08);  // CTRL8 - Accel ±8g
 }

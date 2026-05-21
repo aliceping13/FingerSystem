@@ -1,6 +1,6 @@
 #include "imu.h"
 
-#define IMU_ADDR 0x6A  
+#define IMU_ADDR 0x6B  
 
 void imuWrite(uint8_t reg, uint8_t data) {
     myWire.beginTransmission(IMU_ADDR);  // Wire -> myWire

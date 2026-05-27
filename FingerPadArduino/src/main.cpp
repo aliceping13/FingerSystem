@@ -3,25 +3,47 @@
 #define ACCEL_SENS  0.000244f   // g/LSB
 #define GYRO_SENS   0.070f      // dps/LSB
 
-TwoWire myWire(PA9, PF0); // Arduino pins
+// Look at these: https://primalcortex.wordpress.com/2022/12/02/some-stm32-arduino-framework-tips-for-i2c-and-sh1106-oleds/
+// https://community.st.com/t5/others-stm32-mcus-related/nucleo-g474re-arduino-i2c-not-working/td-p/98317
+// https://www.saleae.com/support/tutorials-learning/example-projects/how-to-analyze-i2c
+
+TwoWire myWire(PB7, PA15); // Arduino pins (SDA, SCL)
 
 void setup() {
+    
     Serial.begin(115200);
-    myWire.begin();
-    // pinMode(PA9, INPUT_PULLUP);
-    // pinMode(PF0, INPUT_PULLUP);
-    myWire.setClock(400000);
-    delay(10);
+    Serial.println("start");
+    delay(1000);
 
-    uint8_t who;
-    imuRead(0x0F, &who, 1);
-    Serial.print("WHO_AM_I = 0x");
-    Serial.println(who, HEX);
-    if (who != 0x71) {
-        Serial.println("IMU not found");
-        while (1);
+    myWire.begin();
+    Serial.println("wire began");
+    myWire.setClock(400000);
+    Serial.println("clock set");
+
+    for (uint8_t addr = 1; addr < 127; addr++) {
+        myWire.beginTransmission(addr);
+        if (myWire.endTransmission() == 0) {
+            Serial.print("Device found at 0x");
+            Serial.println(addr, HEX);
+        }
     }
-    Serial.println("IMU found");
+
+    myWire.beginTransmission(0x6B);
+    myWire.write(0x0F);
+    myWire.endTransmission(false);
+    myWire.requestFrom((uint8_t)0x6B, (uint8_t)1);
+    Serial.println(myWire.available());
+    Serial.println(myWire.read(), HEX);
+
+    // uint8_t who;
+    // imuRead(0x0F, &who, 1);
+    // Serial.print("WHO_AM_I = 0x");
+    // Serial.println(who, HEX);
+    // if (who != 0x71) {
+    //     Serial.println("IMU not found");
+    //     while (1);
+    // }
+    // Serial.println("IMU found");
 
     imuWrite(0x03, 0x00);  // IF_CFG - I2C enabled, active-high interrupts, push-pull, no internal pull-ups
     imuWrite(0x10, 0x30);  // CTRL1 - Accel: 120 Hz, high-performance (OP_MODE_XL=000)
